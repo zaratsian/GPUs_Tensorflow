@@ -10,7 +10,8 @@
 #
 #   Versions:
 #       OS          Red Hat 7.5 (Kernel: Linux 3.10.0-862.3.2.el7.x86_64)
-#       GCC         [GCC 4.8.5 20150623 (Red Hat 4.8.5-28)] on linux2
+#       GCC         gcc (GCC) 4.8.5 20150623 (Red Hat 4.8.5-28)
+#       Python      Python 3.6.5 |Anaconda, Inc.| (default, Apr 29 2018, 16:14:56) 
 #       Python      2.7.5
 #       Tensorflow  1.4.0 (tensorflow-gpu)
 #
@@ -28,6 +29,7 @@ sudo yum -y install gcc gcc-c++ python-pip python-devel atlas atlas-devel gcc-gf
 
 sudo yum -y install wget
 sudo yum -y install dkms
+sudo yum -y install bzip2
 
 ######################################################################################################
 #
@@ -108,6 +110,30 @@ echo 'export CUDA_HOME="/usr/local/cuda"' >> ~/.bashrc
 ######################################################################################################
 sudo pip install --upgrade pip
 sudo pip install tensorflow-gpu==1.4.0
+
+######################################################################################################
+#
+#   Run Tensorflow GPU / CPU Test
+#
+######################################################################################################
+
+import tensorflow as tf
+
+with tf.device('/cpu:0'):
+    a_c = tf.constant([1.0, 2.0, 3.0, 4.0, 5.0, 6.0], shape=[2, 3], name='a-cpu')
+    b_c = tf.constant([1.0, 2.0, 3.0, 4.0, 5.0, 6.0], shape=[3, 2], name='b-cpu')
+    c_c = tf.matmul(a_c, b_c, name='c-cpu')
+
+with tf.device('/gpu:0'):
+    a_g = tf.constant([1.0, 2.0, 3.0, 4.0, 5.0, 6.0], shape=[2, 3], name='a-gpu')
+    b_g = tf.constant([1.0, 2.0, 3.0, 4.0, 5.0, 6.0], shape=[3, 2], name='b-gpu')
+    c_g = tf.matmul(a_g, b_g, name='c-gpu')
+
+with tf.Session(config=tf.ConfigProto(log_device_placement=True)) as sess:
+    print(sess.run(c_c))
+    print(sess.run(c_g))
+
+print('DONE!')
 
 
 #ZEND
